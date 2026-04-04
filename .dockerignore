@@ -1,0 +1,20 @@
+.git
+.gitignore
+.next
+.source
+node_modules
+npm-debug.log*
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+compose.yaml
+
+# Dev/CI
+.github
+.env*
+
+# OS
+.DS_Store
+*.pem
