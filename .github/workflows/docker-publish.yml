@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: CI/CD — HomeLab Blog
 
 on:
   push:
@@ -11,28 +11,68 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
-    name: Build & Push
+  lint:
+    name: Type-Check
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: TypeScript Type-Check
+        run: npm run type-check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Next.js Build
+        run: npm run build
+
+  build-and-push:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: build
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      - name: Docker Buildx einrichten
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
+      - name: GitHub Container Registry anmelden
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
+      - name: Docker-Metadaten extrahieren
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -42,7 +82,7 @@ jobs:
             type=sha,prefix=sha-
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - name: Build and push Docker image
+      - name: Docker-Image bauen und pushen
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -52,3 +92,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+
+  notify-dockhand:
+    name: Dockhand Webhook
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Dockhand Stack-Update auslösen
+        run: |
+          curl -s -f -X POST "${{ secrets.DOCKHAND_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"event":"deploy","image":"ghcr.io/${{ github.repository }}:latest","ref":"${{ github.sha }}"}'
