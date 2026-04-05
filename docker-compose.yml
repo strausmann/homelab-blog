@@ -3,21 +3,12 @@ services:
     image: ghcr.io/strausmann/homelab-blog:latest
     container_name: homelab-blog
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
       - NEXT_TELEMETRY_DISABLED=1
-    labels:
-      # Traefik labels — passe die Domain an deine lokale Traefik-Konfiguration an
-      - "traefik.enable=true"
-      - "traefik.http.routers.homelab-blog.rule=Host(`blog.strausmann.cloud`)"
-      - "traefik.http.routers.homelab-blog.entrypoints=websecure"
-      - "traefik.http.routers.homelab-blog.tls.certresolver=letsencrypt"
-      - "traefik.http.services.homelab-blog.loadbalancer.server.port=3000"
     networks:
-      - traefik-net
+      - traefik-public
 
 networks:
-  traefik-net:
+  traefik-public:
     external: true
