@@ -1,0 +1,61 @@
+---
+title: Proxmox Backup Server einrichten – Schritt für Schritt
+description: Wie wir den Proxmox Backup Server (PBS) für automatische VM-Backups auf dem HPE DL380 konfiguriert haben.
+date: 2026-02-20
+author: Stefan Strausmann
+tags: [proxmox, backup, pbs, homelab]
+---
+
+Der **Proxmox Backup Server (PBS)** ist ein unverzichtbarer Bestandteil unseres HomeLabs.
+In diesem Beitrag beschreiben wir die Einrichtung und Konfiguration für das HomeLab Maschen.
+
+## Warum PBS?
+
+Im Vergleich zu einfachen Backup-Lösungen bietet PBS:
+
+- **Inkrementelle Backups** mit Deduplizierung
+- **Verschlüsselung** auf Client-Seite
+- **Verifikation** der Backups mit `verify`-Jobs
+- **Pruning** nach konfigurierbaren Regeln
+
+## Installation
+
+PBS wird als separate VM auf unserem HPE DL380 Gen9 betrieben:
+
+```bash
+# PBS-Repository hinzufügen
+echo "deb http://download.proxmox.com/debian/pbs bookworm pbs-no-subscription" \
+  > /etc/apt/sources.list.d/pbs-no-subscription.list
+
+# Installation
+apt update && apt install proxmox-backup-server
+```
+
+## Datastore anlegen
+
+Nach der Installation wird ein Datastore auf der Synology NAS eingerichtet,
+die per NFS eingebunden ist:
+
+```bash
+# NFS mount (in /etc/fstab)
+synology.local:/volume1/proxmox-backup /mnt/pbs-store nfs defaults,_netdev 0 0
+```
+
+Im Web-UI von PBS dann: **Administration → Datenspeicher → Hinzufügen**
+
+## Backup-Jobs konfigurieren
+
+In Proxmox VE werden die Backup-Jobs unter **Datacenter → Backup** angelegt:
+
+| Setting | Wert |
+|---|---|
+| Schedule | täglich 02:00 Uhr |
+| Retention | 7 täglich, 4 wöchentlich, 3 monatlich |
+| Kompression | zstd |
+| Verschlüsselung | aktiviert |
+
+## Ergebnis
+
+Nach der Einrichtung werden alle VMs automatisch gesichert und
+die Backup-Integrität wöchentlich verifiziert. Die Deduplizierungsrate
+liegt bei unseren VMs bei ca. 65%.

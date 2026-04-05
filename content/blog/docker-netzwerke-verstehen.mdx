@@ -1,0 +1,85 @@
+---
+title: Docker-Netzwerke verstehen und richtig einsetzen
+description: Eine praktische Erklärung von Docker-Netzwerktypen und wie wir sie im HomeLab für Sicherheit und Isolation einsetzen.
+date: 2026-03-10
+author: Stefan Strausmann
+tags: [docker, netzwerk, security, homelab]
+---
+
+Im HomeLab Maschen betreiben wir zahlreiche Docker-Container.
+Eine saubere Netzwerkkonfiguration ist entscheidend für Sicherheit und Übersichtlichkeit.
+
+## Die vier Netzwerktypen
+
+### 1. bridge (Standard)
+
+Das Standard-Netzwerk für Container auf einem einzelnen Host:
+
+```yaml
+services:
+  app:
+    image: myapp:latest
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+Container im gleichen Bridge-Netzwerk können sich gegenseitig über den Servicenamen erreichen.
+
+### 2. host
+
+Der Container teilt den Netzwerk-Namespace mit dem Host:
+
+```yaml
+services:
+  monitoring:
+    image: grafana/grafana:latest
+    network_mode: host
+```
+
+Wird bei uns nur für Monitoring-Tools eingesetzt, die direkten Zugriff auf Host-Metriken brauchen.
+
+### 3. overlay (Swarm)
+
+Für Multi-Host-Deployments. In unserem Setup nutzen wir dies für
+Services die auf mehreren Docker-Nodes laufen sollen.
+
+### 4. macvlan
+
+Ermöglicht Containern eine echte MAC-Adresse. Nützlich für
+Legacy-Applikationen die direkt im LAN erreichbar sein müssen.
+
+## Unser Netzwerk-Schema
+
+```
+┌─────────────────────────────────────────┐
+│ Docker Host                             │
+│                                         │
+│  ┌──────────────┐    ┌──────────────┐  │
+│  │ frontend-net  │    │ backend-net  │  │
+│  │              │    │              │  │
+│  │  traefik ────┼────┼── app        │  │
+│  │              │    │    │         │  │
+│  └──────────────┘    │  postgres    │  │
+│                      └──────────────┘  │
+└─────────────────────────────────────────┘
+```
+
+## Sicherheits-Best-Practices
+
+1. **Keine unnötigen Port-Exposes** – nur Traefik exponiert Ports nach außen
+2. **Separate Netzwerke** pro Stack – kein Container greift auf fremde Stacks zu
+3. **Internal-Flag** für Datenbanken:
+
+```yaml
+networks:
+  db-network:
+    driver: bridge
+    internal: true  # kein Internetzugang
+```
+
+Mit dieser Struktur haben wir eine klare Trennung zwischen öffentlich
+zugänglichen Services und internen Backend-Komponenten.
