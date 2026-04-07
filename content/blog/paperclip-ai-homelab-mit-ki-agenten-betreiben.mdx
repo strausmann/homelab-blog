@@ -1,0 +1,147 @@
+---
+title: Paperclip AI — Wie wir unser HomeLab mit AI-Agenten betreiben
+description: Unser Erfahrungsbericht mit Paperclip AI – einer Plattform für autonome KI-Agenten, die wir als "digitales IT-Team" für das HomeLab Maschen einsetzen.
+date: 2026-04-08
+author: Stefan Strausmann
+tags: [paperclip, ai-agenten, automatisierung, claude, homelab, devops]
+---
+
+Was wäre, wenn euer HomeLab ein eigenes IT-Team hätte — rund um die Uhr verfügbar, ohne Urlaub, und in der Lage, Aufgaben eigenständig zu bearbeiten, Entscheidungen zu treffen und zu dokumentieren?
+
+Genau das versuchen wir mit **Paperclip AI** umzusetzen.
+
+## Was ist Paperclip AI?
+
+Paperclip AI ist eine Plattform für autonome KI-Agenten. Statt einzelne ChatGPT-Anfragen zu stellen, definiert man **Agenten** mit Identität, Zuständigkeiten und Werkzeugen — und diese Agenten arbeiten selbstständig an Aufgaben, die ihnen zugewiesen werden.
+
+Die Agenten basieren auf großen Sprachmodellen (bei uns: Claude von Anthropic), haben aber:
+- Zugriff auf **Tools** (SSH, Docker, APIs, Dateisystem, Web)
+- Eine definierte **Rolle** (z.B. "Head of Infrastructure")
+- Ein **Regelwerk** (Unternehmensrichtlinien, Genehmigungsprozesse)
+- Einen **Heartbeat-Zyklus** (regelmäßige Aktivität, nicht nur auf Anfrage)
+
+## Unsere Agenten-Struktur
+
+Wir haben die Unternehmensstruktur der "Strausmann HomeLab GmbH" als Vorlage genommen:
+
+```
+Björn Strausmann (Gesellschafter, Mensch)
+            |
+        CEO Frank (Agent)
+            |
+      CTO Markus (Agent)
+            |
+   +--------+--------+--------+--------+
+   Bernd    Rainer   Stefan   Michael  Sabine
+  (Infra)  (Sec)    (Eng)    (M365)   (Docs)
+```
+
+Jeder Agent hat:
+- Eine **Persönlichkeit** und klare Verantwortlichkeiten
+- **Team-Handbücher** mit technischen Richtlinien
+- Zugriff auf die **richtigen Tools** für seine Aufgaben
+- Eskalationspfade (an wen bei Problemen oder Genehmigungsbedarf)
+
+### Beispiel: Bernd (Head of Infrastructure)
+
+Bernd ist zuständig für:
+- Proxmox-VMs erstellen, konfigurieren, migrieren
+- Docker-Stacks deployen und warten
+- Backup-Integrität prüfen
+- Monitoring-Alerts bearbeiten
+
+Er hat SSH-Zugriff auf alle Nodes, kann Docker-Commands ausführen, liest Prometheus-Metriken und schreibt Protokolle. Was er **nicht** darf: externe Dienste buchen, Sicherheitsrichtlinien ändern, oder Daten löschen — dafür braucht er Genehmigung.
+
+## Der Heartbeat-Mechanismus
+
+Agenten werden nicht manuell aktiviert (außer für spezifische Aufgaben). Sie laufen in einem **Heartbeat-Zyklus**:
+
+1. **Inbox prüfen** — gibt es neue Aufgaben? Priorisierte Bearbeitung nach WIP-Limits
+2. **Aktive Aufgaben bearbeiten** — Code schreiben, Systeme konfigurieren, Dokumentation erstellen
+3. **Status melden** — Fortschritt kommentieren, Blockaden eskalieren
+4. **Schlafphase** — bis zum nächsten Heartbeat (je nach Agent: 1-4 Stunden)
+
+Dieses Modell ist bewusst **asynchron** — kein Agent blockiert auf eine Eingabe, sondern arbeitet im Takt.
+
+## Reale Anwendungsfälle
+
+### Container-Updates
+
+Wenn Watchtower einen Update meldet, erstellt der Ops-Agent automatisch ein Issue, prüft das Changelog, führt das Update durch und meldet Erfolg oder Fehler.
+
+### Dokumentation
+
+Nach jeder abgeschlossenen Aufgabe erstellt der zuständige Agent ein Arbeitsprotokoll und aktualisiert die Knowledge Base im Obsidian Vault. Menschen müssen das nicht mehr manuell nachhalten.
+
+### Sicherheits-Monitoring
+
+Der Security-Agent Rainer prüft regelmäßig CrowdSec-Alerts, wertet Fail2Ban-Logs aus und eskaliert bei ungewöhnlichen Mustern an Bernd und CEO Frank.
+
+### Blog-Artikel schreiben
+
+Dieser Artikel hier wurde — ihr ahnt es — von einem AI-Agenten geschrieben. Stefan, der "Head of Software Engineering", bearbeitet das Issue "Phase 5: Erste Blog-Artikel schreiben" als Teil des regulären Heartbeat-Zyklus.
+
+## Das Regelwerk: Governance für Agenten
+
+Der kritischste Teil eines autonomen Agenten-Systems ist nicht die KI-Kompetenz — es ist **Governance**: Wann darf ein Agent selbst handeln, wann muss er fragen?
+
+Wir haben folgende Grundregeln:
+
+### Genehmigungspflicht-Matrix
+
+| Aktion | Genehmiger |
+|---|---|
+| Infrastruktur-Änderung | CTO Markus |
+| Security-Änderung | CTO + Board |
+| Neue externe Services | CTO → CEO |
+| Datenlöschung | CTO → Board |
+| Notfall-Eingriff | sofort handeln, innerhalb 1h nachmelden |
+
+Kein Agent darf ohne Genehmigung handeln — außer im echten Notfall.
+
+### WIP-Limits
+
+Jeder Agent hat maximal **2 aktive Aufgaben** gleichzeitig. Das verhindert, dass Agenten sich in zu viele Baustellen verzettelten und nichts fertigstellen.
+
+### Sprache
+
+Alle Agenten kommunizieren auf **Deutsch** — Kommentare, Dokumente, Git-Commits. Das ist bewusst so, weil das Projekt Deutsch ist und wir keine Sprachmischung wollen.
+
+## Was funktioniert gut?
+
+**Dokumentation** ist der größte Gewinn. Agenten vergessen nicht zu dokumentieren — sie tun es als Pflichtschritt vor dem Abschließen einer Aufgabe. Die Knowledge Base wächst kontinuierlich.
+
+**Konsistenz** ist ein weiterer Vorteil. Agenten halten sich an Richtlinien verlässlicher als müde Menschen um 23 Uhr.
+
+**Verfügbarkeit** spricht für sich: Wenn nachts ein Monitoring-Alert kommt, bearbeitet Bernd ihn — kein Mensch wird geweckt.
+
+## Was ist noch schwierig?
+
+**Kontext-Management** bleibt eine Herausforderung. Agenten-Konversationen sind nicht unbegrenzt lang. Bei komplexen, mehrstufigen Aufgaben muss der Zustand explizit in Issues, Kommentaren und Dokumentation gehalten werden.
+
+**Fehlerhafte Autonomie** ist ein echtes Risiko. Ein Missverständnis im Prompt kann dazu führen, dass ein Agent etwas tut, das zwar regelkonform aber nicht intendiert war. Gute Genehmigungsprozesse und klare Rollback-Pläne sind deshalb essenziell.
+
+**Token-Kosten** skalieren mit Aktivität. Wir managen das durch Haiku-Modelle für einfache Aufgaben (SSH-Checks, Vault-Lookups) und Sonnet/Opus nur für komplexe Analysen und Code.
+
+## Unser Stack
+
+| Komponente | Lösung |
+|---|---|
+| Agent-Plattform | Paperclip AI |
+| LLM | Claude (Anthropic) — Opus, Sonnet, Haiku |
+| Tool-Framework | MCP (Model Context Protocol) |
+| Secrets | Vaultwarden + `bw serve` |
+| Kommunikation | Paperclip Issues, Kommentare |
+| Code/Doku | GitLab (intern), GitHub (öffentlich) |
+
+## Ausblick
+
+Wir experimentieren gerade mit:
+
+- **Agenten-Teams** für komplexe Research-Aufgaben (3 Spezialisten parallel)
+- **Automatischen Genehmigungsworkflows** für häufige Standardaufgaben
+- **Besserer Observability** — welche Tokens wurden wann wofür verwendet
+
+Das Agenten-Modell für HomeLab-Betrieb steckt noch in den Kinderschuhen. Aber der Ansatz hat uns bereits heute messbar entlastet — nicht weil Agenten Menschen ersetzen, sondern weil sie die langweiligen, repetitiven Aufgaben übernehmen und so Zeit für die interessanten Probleme freilassen.
+
+Falls ihr Fragen zu unserem Setup habt oder selbst mit Paperclip AI experimentiert: Schreibt es in die Kommentare oder meldet euch direkt.

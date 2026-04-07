@@ -1,0 +1,101 @@
+---
+title: Das HomeLab Maschen — Unser Setup und warum wir bloggen
+description: Eine Einführung in das HomeLab Maschen der Familie Strausmann in Seevetal – Hardware, Software, Motivation und Ausblick.
+date: 2026-04-08
+author: Stefan Strausmann
+tags: [homelab, einführung, proxmox, docker, infrastruktur]
+---
+
+Willkommen beim **Strausmann HomeLab Blog** — dem technischen Journal der Familie Strausmann aus Maschen, Seevetal.
+
+In diesem ersten richtigen Beitrag stellen wir vor, was hinter dem Begriff "HomeLab Maschen" steckt, wie unsere Infrastruktur aufgebaut ist und warum wir angefangen haben, darüber zu schreiben.
+
+## Was ist ein HomeLab?
+
+Ein HomeLab ist eine private IT-Infrastruktur, die zu Hause betrieben wird — typischerweise mit echter Server-Hardware, nicht nur einem Raspberry Pi auf dem Regal. Der Begriff kommt aus der DevOps- und Sysadmin-Community und beschreibt Umgebungen, in denen man Technologien aus dem professionellen Rechenzentrum-Umfeld zu Hause betreiben, ausprobieren und erlernen kann.
+
+Bei uns ist das kein Hobby-Projekt in einer Bastelkiste — es ist der aktive IT-Betrieb für die Familie Strausmann, verwaltet durch die **Strausmann HomeLab GmbH**.
+
+## Die Hardware
+
+### HPE ProLiant DL380 Gen9
+
+Das Herzstück unseres HomeLabs ist ein **HPE ProLiant DL380 Gen9**, ein 2U-Rack-Server der Enterprise-Klasse. Die wichtigsten Specs:
+
+- 2x Intel Xeon E5-2680 v4 (14 Kerne / 28 Threads je CPU)
+- 256 GB ECC RAM
+- Lokaler SSD-Speicher für VMs und Container
+- iDRAC 9 für Remote-Management
+
+Auf diesem Server läuft **Proxmox VE** als Hypervisor — eine Open-Source-Virtualisierungsplattform, die sowohl KVM-VMs als auch LXC-Container unterstützt.
+
+### Synology NAS
+
+Für den Netzwerkspeicher setzen wir auf eine **Synology NAS**. Sie dient als:
+
+- Backup-Target für den Proxmox Backup Server (PBS)
+- Netzwerklaufwerk für Dokumente und Medien
+- iSCSI-Target für bestimmte VM-Workloads
+
+### UniFi Dream Machine Pro Max (UDM Pro Max)
+
+Das Netzwerk wird von einer **Ubiquiti UDM Pro Max** verwaltet. Sie übernimmt:
+
+- Routing und VLAN-Segmentierung
+- Firewall und IDS/IPS
+- WLAN-Management (mehrere Access Points)
+- VPN-Endpunkt für externen Zugriff
+
+### Docker-Nodes
+
+Neben dem zentralen Proxmox-Server betreiben wir mehrere dedizierte **Docker-Nodes** für containerisierte Dienste. Diese laufen als VMs auf dem DL380 und hosten unter anderem:
+
+- Reverse Proxy (Traefik)
+- Monitoring (Grafana, Prometheus)
+- Authentifizierung (Authentik)
+- Self-hosted Services (Paperless-ngx, Vaultwarden, Overseerr, ...)
+
+## Die Software-Infrastruktur
+
+| Schicht | Technologie |
+|---|---|
+| Hypervisor | Proxmox VE |
+| Container-Runtime | Docker / Docker Compose |
+| Netzwerk | UniFi, Tailscale, Pangolin |
+| Backup | Proxmox Backup Server, Synology Hyper Backup |
+| Monitoring | Prometheus, Grafana, Uptime Kuma |
+| Security | CrowdSec, Authentik, Vaultwarden |
+| Automatisierung | n8n, Ansible, AI-Agenten (Paperclip) |
+| Cloud | Hetzner Cloud, Microsoft 365, Azure |
+
+## Warum die HomeLab GmbH?
+
+Das klingt nach Bürokratie, ist aber ein bewusstes Design-Entscheidung: Wir verwalten die Infrastruktur wie ein kleines Unternehmen — mit klaren Verantwortlichkeiten, Genehmigungsprozessen und Dokumentationspflichten.
+
+Den Betrieb übernehmen dabei keine Menschen allein: Wir nutzen **Paperclip AI**, eine Plattform für autonome KI-Agenten, um Routineaufgaben zu automatisieren. CEO, CTO, Infrastruktur-Leiter, Security-Experte — all das sind Agenten, die eigenständig Aufgaben bearbeiten, Entscheidungen treffen (im Rahmen definierter Grenzen) und dokumentieren.
+
+Mehr dazu in einem späteren Artikel.
+
+## Warum dieser Blog?
+
+Ehrlich gesagt aus mehreren Gründen:
+
+1. **Dokumentation für uns selbst** — Eine gut geführte Wissensbasis verhindert, dass man in zwei Jahren nicht mehr weiß, warum man etwas so konfiguriert hat.
+
+2. **Austausch mit der Community** — Das HomeLab-Universum lebt von Menschen, die ihr Wissen teilen. Wir profitieren täglich von Blogposts anderer, also leisten wir unseren Beitrag.
+
+3. **Qualitätssicherung** — Wer etwas erklären kann, hat es verstanden. Durch das Schreiben merkt man schnell, wo das eigene Verständnis noch lückenhaft ist.
+
+## Was kommt als nächstes?
+
+Geplante Themen in nächster Zeit:
+
+- **Vaultwarden als Credential-Vault für AI-Agenten** — Wie wir Secrets sicher verwalten
+- **Paperclip AI im HomeLab** — Autonome Agenten als IT-Betriebsteam
+- **Proxmox Backup Server** — Backup-Strategien für VMs und Container
+- **CrowdSec im HomeLab** — Kollektive Sicherheit für self-hosted Services
+- **Tailscale Zero-Trust-Netzwerk** — VPN ohne Server, überall erreichbar
+
+Alle Artikel erscheinen auf Deutsch — weil das Projekt Deutsch ist, unsere Familie Deutsch ist, und es im deutschsprachigen Raum noch immer zu wenig technische HomeLab-Dokumentation gibt.
+
+Bis zum nächsten Beitrag — und wenn ihr Fragen oder Feedback habt, freuen wir uns über Kommentare!
